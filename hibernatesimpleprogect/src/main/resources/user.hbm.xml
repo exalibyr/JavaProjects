@@ -1,0 +1,13 @@
+<hibernate-mapping>
+    <class name="models.User" table="users">
+        <id name="id" column="id" type="java.lang.Integer">
+            <generator class="increment"/>
+        </id>
+        <property name="name" column="name" type="java.lang.String"/>
+        <property name="age" column="age" type="java.lang.Integer"/>
+        <list name="autos" lazy="false">
+            <key column="id"/>
+            <one-to-many class="models.Auto"/>
+        </list>
+    </class>
+</hibernate-mapping>

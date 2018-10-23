@@ -1,0 +1,11 @@
+<hibernate-mapping>
+    <class name="models.Auto" table="autos">
+        <id name="id" column="id" type="java.lang.Integer">
+            <generator class="increment"/>
+        </id>
+        <property name="color" column="color" type="java.lang.String"/>
+        <property name="model" column="model" type="java.lang.String"/>
+        <many-to-one name="user" column="user_id" class="models.User" cascade="delete-orphan"/>
+
+    </class>
+</hibernate-mapping>
