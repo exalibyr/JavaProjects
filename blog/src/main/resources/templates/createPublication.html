@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My blog</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <form action="#" th:action = "@{/user/id={id}/createPublication(id=${userId})}" th:object="${publicationForm}" method="post">
+        <p>
+            <textarea cols="50" rows="1" placeholder="Write title here" th:field="*{title}"></textarea>
+        </p>
+        <p th:if="${#fields.hasErrors('title')}" th:errors="*{title}">Length must be from 1 to 50 symbols</p>
+        <p>
+            <textarea cols="100" rows="5" placeholder="Write text here" th:field="*{content}"></textarea>
+        </p>
+        <p th:if="${#fields.hasErrors('content')}" th:errors="*{content}">Length must be from 1 to 500 symbols</p>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>

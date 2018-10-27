@@ -9,7 +9,7 @@ public class Main {
         UserService userService = new UserServiceImpl();
         User user = new User("Petrosyan", 54);
         userService.saveUser(user);
-        Auto auto = new Auto("Vedro pomoynoe", "Cvet govna");
+        Auto auto = new Auto("Vedro", "rust");
         user.addAuto(auto);
         userService.updateUser(user);
 
