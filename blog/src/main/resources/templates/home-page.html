@@ -1,37 +1,45 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>My blog</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-</head>
-<body>
-<h1 align="center" th:text="'Welcome to your home page ' + ${user.name} + '!'"></h1>
-    <table>
-        <tr>
-            <td><label th:text="${user.name} + ' ' + ${user.surname}"></label></td>
-        </tr>
-        <tr>
-            <td>About: <label th:text="${user.about}"></label></td>
-        </tr>
-        <tr>
-            <td><button onclick="#" th:onclick="@{/user/id={id}/createPublication(id=${user.id})}">Create publication</button></td>
-            <td><a href="#" th:href="@{/user/id={id}/createPublication(id=${user.id})}">Create publication</a></td>
-        </tr>
-    </table>
-<h3 align="center">Publications</h3>
-    <table th:each="publication : ${publications}">
-        <tr>
-            <td><label th:text="${publication.title}"></label></td>
-        </tr>
-        <tr>
-            <td><label th:text="${publication.content}"></label></td>
-        </tr>
-        <tr>
-            <td><label th:text="${publication.dateTime}"></label></td>
-        </tr>
-    </table>
-    <!--<ul th:each="publication : ${publications}">-->
-        <!--<li></li>-->
-    <!--</ul>-->
-</body>
+    <head>
+        <title>My blog</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+    <h1 align="center" th:text="'Welcome to your home page, ' + ${user.name} + '!'"></h1>
+        <table>
+            <tr>
+                <td><label th:text="${user.name} + ' ' + ${user.surname}"></label></td>
+            </tr>
+            <tr>
+                <td>About: <label th:text="${user.about}"></label></td>
+            </tr>
+        </table>
+        <form action="#" th:action="@{/user/id={userId}/createPublication (userId=${user.id})}" method="get">
+            <button type="submit">Create publication</button>
+        </form>
+        <form action="#" th:action="@{/user/id={userId}/findUsers (userId=${user.id})}" method="get">
+            <button type="submit">Find users</button>
+        </form>
+    <h3 align="center">Your publications</h3>
+        <table th:each="publication : ${publications}">
+            <tr>
+                <td>Title:</td>
+            </tr>
+            <tr>
+                <td><label th:text="${publication.title}"></label></td>
+            </tr>
+            <tr>
+                <td>Text:</td>
+            </tr>
+            <tr>
+                <td><label th:text="${publication.content}"></label></td>
+            </tr>
+            <tr>
+                <td><label th:text="${publication.dateTime}"></label></td>
+            </tr>
+            <tr>
+                <td><br></td>
+            </tr>
+        </table>
+    </body>
 </html>

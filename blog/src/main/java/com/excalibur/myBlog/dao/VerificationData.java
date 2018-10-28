@@ -1,5 +1,7 @@
 package com.excalibur.myBlog.dao;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 
 @Entity
@@ -13,7 +15,8 @@ public class VerificationData {
     @Column(name = "user_password", nullable = false)
     private String password;
 
-    @OneToOne(optional = false, cascade = CascadeType.ALL)
+    @OneToOne(optional = false)
+    @Cascade(value = org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "user_id", unique = true, nullable = false, updatable = false)
     private User user;
 

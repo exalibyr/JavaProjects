@@ -5,7 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     </head>
     <body>
-    <h1 align="center" th:text="'Welcome to your home page, ' + ${user.name} + '!'"></h1>
+        <h1 align="center" th:text="'Page of user: ' + ${user.name} + ' ' + ${user.surname}"></h1>
         <table>
             <tr>
                 <td><label th:text="${user.name} + ' ' + ${user.surname}"></label></td>
@@ -14,13 +14,10 @@
                 <td>About: <label th:text="${user.about}"></label></td>
             </tr>
         </table>
-        <form action="#" th:action="@{/user/id={userId}/createPublication (userId=${user.id})}" method="get">
-            <button type="submit">Create publication</button>
+        <form action="#" th:action="@{/user/id={userId} (userId=${userId})}" method="get">
+            <button type="submit">Go to home page</button>
         </form>
-        <form action="#" th:action="@{/user/id={userId}/findUsers (userId=${user.id})}" method="get">
-            <button type="submit">Find users</button>
-        </form>
-    <h3 align="center">Your publications</h3>
+        <h3 align="center" th:text="${user.name} + ' ' + ${user.surname} + '\'s ' + 'publications'"></h3>
         <table th:each="publication : ${publications}">
             <tr>
                 <td>Title:</td>

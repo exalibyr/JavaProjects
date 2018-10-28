@@ -1,5 +1,8 @@
 package com.excalibur.myBlog.dao;
 
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +25,12 @@ public class User {
     @Column(name = "about")
     private String about;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+//    @Cascade(value = CascadeType.ALL)
     private List<Publication> publications;
 
-    @OneToOne(optional = false, mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne(optional = false, mappedBy = "user")
+    @Cascade(value = CascadeType.ALL)
     private VerificationData verificationData;
 
     public User() {

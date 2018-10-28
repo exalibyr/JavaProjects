@@ -1,5 +1,7 @@
 package com.excalibur.myBlog.dao;
 
+import org.hibernate.annotations.Cascade;
+
 import javax.persistence.*;
 import java.time.ZonedDateTime;
 
@@ -21,7 +23,8 @@ public class Publication {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
+//    @Cascade(value = org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 

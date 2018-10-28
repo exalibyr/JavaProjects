@@ -14,11 +14,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 
 import javax.validation.Valid;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -137,10 +139,13 @@ public class UserController{
         else {
             Optional<User> userOptional = userService.findUserById(userId);
             if(userOptional.isPresent()){
+                //get user from db
                 User user = userOptional.get();
+                //create new publication instance to insert into db
                 Publication newPublication = publicationForm.getPublication();
+                newPublication.setDateTime(ZonedDateTime.now());
                 newPublication.setUser(user);
-                user.addPublication(newPublication);
+                //add new publication to db
                 publicationService.saveNewPublication(newPublication);
                 return "redirect:/user/id=" + userId;
             }
@@ -149,4 +154,63 @@ public class UserController{
             }
         }
     }
+
+    @GetMapping(value = "/user/id={userId}/findUsers")
+    public String getFindUsersForm( @PathVariable(name = "userId") Integer userId,
+                                  Model model){
+        model.addAttribute("userId", userId);
+        model.addAttribute("userInfo", new User());
+        return "findUsers";
+    }
+
+    @PostMapping(value = "/user/id={userId}/findUsers")
+    public String findUsers(@PathVariable(name = "userId") Integer userId,
+                           @ModelAttribute(name = "userInfo") User userInfo)
+    {
+        return "redirect:/user/id=" + userId + "/showUsers"
+                + userInfo.getName() + "," + userInfo.getSurname();
+    }
+
+    @GetMapping(value = "/user/id={userId}/showUsers{name},{surname}")
+    public String showUsers( @PathVariable(name = "userId") Integer userId,
+                             @PathVariable(name = "name") String name,
+                             @PathVariable(name = "surname") String surname,
+                             Model model){
+        List<User> users = null;
+        if(!name.isEmpty()){
+            if(!surname.isEmpty()){
+//                users = userService.findUsersByNameSurname(name, surname);
+            }
+            else {
+                users = userService.findUsersByName(name);
+            }
+        }
+        else {
+            if(!surname.isEmpty()){
+                users = userService.findUsersBySurname(surname);
+            }
+        }
+        model.addAttribute("userId", userId);
+        model.addAttribute("users", users);
+        return "showUsers";
+    }
+
+    @GetMapping(value = "/user/id={userId}/showUserPage/id={id}")
+    public String showUserPage( @PathVariable(name = "userId") Integer userId,
+                                @PathVariable(name = "id") Integer id,
+                                Model model){
+        Optional<User> userOptional = userService.findUserById(id);
+        if(userOptional.isPresent()){
+            User user = userOptional.get();
+            model.addAttribute("userId", userId);
+            model.addAttribute("user", user);
+            List<Publication> publications = publicationService.findPublicationsByUser(user);
+            model.addAttribute("publications", publications);
+            return "showUserPage";
+        }
+        else {
+            return "error-page";
+        }
+    }
+
 }

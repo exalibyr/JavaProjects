@@ -36,6 +36,14 @@ public class UserService {
         return userRepository.findById(userId);
     }
 
+    public void updateUser(User user){
+        userRepository.save(user);
+    }
+
+//    public List<User> findUsersByNameSurname(String name, String surname){
+//        return userRepository.findByNameSurname(name, surname);
+//    }
+
 
 
 }

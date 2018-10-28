@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>My blog</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+    <h1 align="center">Find users</h1>
+        <form action="#" th:action = "@{/user/id={id}/findUsers (id=${userId})}" method="post">
+            <p>
+                <input type="text" maxlength="20" placeholder="name" th:field="${userInfo.name}">
+            </p>
+            <p>
+                <input type="text" maxlength="30" placeholder="surname" th:field="${userInfo.surname}">
+            </p>
+            <button type="submit">Find</button>
+        </form>
+    </body>
+</html>

@@ -5,6 +5,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
+    <h1 align="center">Create publication</h1>
     <form action="#" th:action = "@{/user/id={id}/createPublication(id=${userId})}" th:object="${publicationForm}" method="post">
         <p>
             <textarea cols="50" rows="1" placeholder="Write title here" th:field="*{title}"></textarea>
