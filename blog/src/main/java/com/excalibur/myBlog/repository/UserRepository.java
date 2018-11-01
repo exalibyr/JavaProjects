@@ -1,16 +1,16 @@
 package com.excalibur.myBlog.repository;
 
 import com.excalibur.myBlog.dao.User;
+import com.excalibur.myBlog.dao.VerificationData;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserRepository extends CrudRepository<User, Integer> {
 
-    List<User> findByName(String name);
+    Optional<List<User>> findByNameOrSurname(String name, String surname);
 
-    List<User> findBySurname(String surname);
-
-//    List<User> findByNameSurname(String name, String surname);
+    Optional<User> findByVerificationData(VerificationData verificationData);
 
 }

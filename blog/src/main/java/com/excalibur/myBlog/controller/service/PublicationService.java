@@ -33,4 +33,8 @@ public class PublicationService {
     public Iterable<Publication> findAllPublications(){
         return publicationRepository.findAll();
     }
+
+    public void deletePublicationById(Integer id){
+        publicationRepository.deleteById(id);
+    }
 }

@@ -24,14 +24,6 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    public List<User> findUsersByName(String name){
-        return userRepository.findByName(name);
-    }
-
-    public List<User> findUsersBySurname(String surname){
-        return userRepository.findBySurname(surname);
-    }
-
     public Optional<User> findUserById(Integer userId){
         return userRepository.findById(userId);
     }
@@ -40,10 +32,12 @@ public class UserService {
         userRepository.save(user);
     }
 
-//    public List<User> findUsersByNameSurname(String name, String surname){
-//        return userRepository.findByNameSurname(name, surname);
-//    }
+    public Optional<List<User>> findUsersByNameOrSurname(String name, String surname){
+        return userRepository.findByNameOrSurname(name, surname);
+    }
 
-
+    public Optional<User> findUserByVerificationData(VerificationData verificationData){
+        return userRepository.findByVerificationData(verificationData);
+    }
 
 }

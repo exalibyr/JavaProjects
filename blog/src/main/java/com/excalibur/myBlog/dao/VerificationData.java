@@ -9,13 +9,16 @@ import javax.persistence.*;
 public class VerificationData {
 
     @Id
-    @Column(name = "user_login", nullable = false, unique = true)
+    @Column(name = "user_login")
     private String login;
 
     @Column(name = "user_password", nullable = false)
     private String password;
 
-    @OneToOne(optional = false)
+//    @Column(name = "user_id", nullable = false, unique = true, insertable = false, updatable = false)
+//    private Integer userId;
+
+    @OneToOne(optional = false, fetch = FetchType.LAZY)
     @Cascade(value = org.hibernate.annotations.CascadeType.ALL)
     @JoinColumn(name = "user_id", unique = true, nullable = false, updatable = false)
     private User user;
@@ -43,6 +46,14 @@ public class VerificationData {
     public void setPassword(String password) {
         this.password = password;
     }
+
+//    public Integer getUserId() {
+//        return userId;
+//    }
+//
+//    public void setUserId(Integer userId) {
+//        this.userId = userId;
+//    }
 
     public User getUser() {
         return user;

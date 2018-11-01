@@ -11,4 +11,5 @@ public interface PublicationRepository extends CrudRepository<Publication, Integ
     List<Publication> findByTitle(String title);
 
     List<Publication> findByUser(User user);
+
 }

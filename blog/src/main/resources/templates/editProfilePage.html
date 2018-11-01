@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>My blog</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    </head>
+    <body>
+        <h1 align="center">Here, you can update information about yourself.</h1>
+        <form action="#" th:action = "@{/user/id={userId}/editProfile (userId=${user.id})}" th:object="${user}" method="post">
+            <table>
+                <tr>
+                    <td>Your name </td>
+                </tr>
+                <tr>
+                    <td><input type="text" maxlength="20" name="name" id="name" th:value="${user.name}"/></td>
+                    <!--<td th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Name length must be from 1 to 20 symbols</td>-->
+                </tr>
+                <tr>
+                    <td><br></td>
+                </tr>
+                <tr>
+                    <td>Your surname </td>
+                </tr>
+                <tr>
+                    <td><input type="text" maxlength="30" th:field="*{surname}"/></td>
+                    <!--<td th:if="${#fields.hasErrors('surname')}" th:errors="*{surname}">Surname length must be from 1 to 30 symbols</td>-->
+                </tr>
+                <tr>
+                    <td><br></td>
+                </tr>
+                <tr>
+                    <td>You can write something about yourself here </td>
+                </tr>
+                <tr>
+                    <td><input type="text" maxlength="100" th:field="*{about}"/></td>
+                    <!--<td th:if="${#fields.hasErrors('about')}" th:errors="*{about}">Field length must not be more than 100 symbols</td>-->
+
+                </tr>
+                <tr>
+                    <td><br></td>
+                </tr>
+                <tr>
+                    <td>Profile picture URL </td>
+                </tr>
+                <tr>
+                    <td><input type="text" th:field="*{avatarUrl}"/></td>
+                </tr>
+                <tr>
+                    <td>
+                        <img th:src="${user.avatarUrl}" alt="Image not found" width="300" height="200">
+                    </td>
+                </tr>
+                <tr>
+                    <td><br></td>
+                </tr>
+                <tr>
+                    <td><button type="submit">Save</button></td>
+                </tr>
+            </table>
+        </form>
+    </body>
+</html>

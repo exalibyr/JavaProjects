@@ -4,6 +4,7 @@ import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,22 +17,28 @@ public class User {
     @SequenceGenerator(name = "user_data_id_seq", sequenceName = "user_data_id_seq", allocationSize = 1)
     private Integer id;
 
+    @Size(max = 20, min = 1)
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Size(max = 30, min = 1)
     @Column(name = "surname", nullable = false)
     private String surname;
 
+    @Size(max = 100)
     @Column(name = "about")
     private String about;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-//    @Cascade(value = CascadeType.ALL)
+    @Cascade(value = {CascadeType.SAVE_UPDATE, CascadeType.DELETE})
     private List<Publication> publications;
 
-    @OneToOne(optional = false, mappedBy = "user")
+    @OneToOne(optional = false, mappedBy = "user", fetch = FetchType.LAZY)
     @Cascade(value = CascadeType.ALL)
     private VerificationData verificationData;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 
     public User() {
     }
@@ -95,5 +102,13 @@ public class User {
 
     public void setVerificationData(VerificationData verificationData) {
         this.verificationData = verificationData;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

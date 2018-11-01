@@ -9,13 +9,13 @@
             <table>
                 <tr>
                     <td>Login </td>
-                    <td><input type="text" th:field="*{userLogin}"/> </td>
-                    <td th:if="${#fields.hasErrors('userLogin')}" th:errors="*{userLogin}">Length must be from 5 to 20 symbols</td>
+                    <td><input type="text" maxlength="20" th:field="*{userLogin}"/> </td>
+                    <td th:if="${#fields.hasErrors('userLogin')}" th:errors="*{userLogin}">Login length must be from 5 to 20 symbols</td>
                 </tr>
                 <tr>
                     <td>Password </td>
-                    <td><input type="password" th:field="*{userPassword}"/></td>
-                    <td th:if="${#fields.hasErrors('userPassword')}" th:errors="*{userPassword}">Length must be from 5 to 30 symbols</td>
+                    <td><input type="password" maxlength="30" th:field="*{userPassword}"/></td>
+                    <td th:if="${#fields.hasErrors('userPassword')}" th:errors="*{userPassword}">Password length must be from 5 to 30 symbols</td>
                 </tr>
                 <tr>
                     <td><button type="submit">Sign in</button></td>

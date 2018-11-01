@@ -1,6 +1,7 @@
 package com.excalibur.myBlog.dao;
 
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
 import java.time.ZonedDateTime;
@@ -23,10 +24,13 @@ public class Publication {
     @Column(name = "content", nullable = false)
     private String content;
 
-    @ManyToOne
-//    @Cascade(value = org.hibernate.annotations.CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @Cascade(value = {CascadeType.SAVE_UPDATE})
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
+
+    @Column(name = "picture_url")
+    private String pictureUrl;
 
     public Publication() {
     }
@@ -74,5 +78,13 @@ public class Publication {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getPictureUrl() {
+        return pictureUrl;
+    }
+
+    public void setPictureUrl(String pictureUrl) {
+        this.pictureUrl = pictureUrl;
     }
 }

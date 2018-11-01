@@ -6,6 +6,7 @@ import com.excalibur.myBlog.controller.service.VerificationDataService;
 import com.excalibur.myBlog.dao.Publication;
 import com.excalibur.myBlog.dao.User;
 import com.excalibur.myBlog.dao.VerificationData;
+import com.excalibur.myBlog.form.ProfileUpdatingForm;
 import com.excalibur.myBlog.form.PublicationForm;
 import com.excalibur.myBlog.form.RegistrationForm;
 import com.excalibur.myBlog.form.VerificationForm;
@@ -13,14 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 
 
 import javax.validation.Valid;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,33 +41,23 @@ public class UserController{
     }
 
     @PostMapping(value = "/sign-in")
-    public String verifyUser(@Valid VerificationForm verificationForm, BindingResult bindingResult){
+    public String verifyUser( @Valid VerificationForm verificationForm, BindingResult bindingResult){
         if(bindingResult.hasErrors()){
             return "sign-in";
         }
         else{
-            Optional<VerificationData> verificationDataOptional =
-                    verificationDataService.verifyUserLogin(verificationForm.getUserLogin());
-            if(verificationDataOptional.isPresent()){
-                VerificationData verificationData = verificationDataOptional.get();
-                if(verificationData.getPassword().equals(verificationForm.getUserPassword())){
-                    return "redirect:/user/id=" + verificationData.getUser().getId();
-                }
-                else {
-                    return "sign-in";
-                }
+            Optional<VerificationData> verificationData = verificationDataService
+                    .verifyUser(verificationForm.getUserLogin(), verificationForm.getUserPassword());
+            if(verificationData.isPresent()){
+                return userService
+                        .findUserByVerificationData(verificationData.get())
+                        .map(user -> "redirect:/user/id=" + user.getId())
+                        .orElse("error-page");
             }
             else {
                 return "sign-in";
             }
-//            VerificationData verificationData = verificationDataService.checkUser(verificationForm.getUserLogin(),
-//                    verificationForm.getUserPassword());
-//            if(verificationData == null){
-//                return "sign-in";
-//            }
-//            else {
-//                return "redirect:/main-page";
-//            }
+
         }
     }
 
@@ -176,22 +165,9 @@ public class UserController{
                              @PathVariable(name = "name") String name,
                              @PathVariable(name = "surname") String surname,
                              Model model){
-        List<User> users = null;
-        if(!name.isEmpty()){
-            if(!surname.isEmpty()){
-//                users = userService.findUsersByNameSurname(name, surname);
-            }
-            else {
-                users = userService.findUsersByName(name);
-            }
-        }
-        else {
-            if(!surname.isEmpty()){
-                users = userService.findUsersBySurname(surname);
-            }
-        }
+        Optional<List<User>> users = userService.findUsersByNameOrSurname(name, surname);
         model.addAttribute("userId", userId);
-        model.addAttribute("users", users);
+        model.addAttribute("users", users.orElseGet(ArrayList::new));
         return "showUsers";
     }
 
@@ -211,6 +187,50 @@ public class UserController{
         else {
             return "error-page";
         }
+    }
+
+    @GetMapping(value = "/user/id={userId}/editProfile")
+    public String getEditProfilePage( @PathVariable(name = "userId") Integer userId,
+//                                      ProfileUpdatingForm profileUpdatingForm,
+                                      Model model){
+//        model.addAttribute("userId", userId);
+        model.addAttribute("user", userService.findUserById(userId).orElseGet(null));
+        return "editProfilePage";
+    }
+
+    @PostMapping(value = "/user/id={userId}/editProfile")
+    public String editProfile( @PathVariable(name = "userId") Integer userId,
+//                               @Valid ProfileUpdatingForm profileUpdatingForm,
+                               @ModelAttribute(name = "user") @Valid User user,
+                               BindingResult bindingResult){
+        if(bindingResult.hasErrors()){
+            return "redirect:/user/id=" + userId + "/editProfile";
+        }
+        else {
+            user.setId(userId);
+//            User user = userService.findUserById(userId).orElseGet(null);
+//            user.setName(profileUpdatingForm.getName());
+//            user.setSurname(profileUpdatingForm.getSurname());
+//            user.setAbout(profileUpdatingForm.getAbout());
+//            user.setAvatarUrl(profileUpdatingForm.getAvatarUrl());
+//            user.setPublications(publicationService.findPublicationsByUser(user));
+            userService.updateUser(user);
+            return "redirect:/user/id=" + userId;
+        }
+    }
+
+//    @DeleteMapping(value = "/user/id={userId}/deletePublication/id={pubId}")
+    @GetMapping(value = "/user/id={userId}/deletePublication/id={pubId}")
+    public String deletePublication( @PathVariable(name = "userId") Integer userId,
+                                     @PathVariable(name = "pubId") Integer pubId)
+    {
+        publicationService.deletePublicationById(pubId);
+        return "redirect:/user/id=" + userId;
+    }
+
+    @GetMapping(value = "/error")
+    public String error(){
+        return "error-page";
     }
 
 }

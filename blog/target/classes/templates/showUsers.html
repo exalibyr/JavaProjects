@@ -8,6 +8,9 @@
         <h3 align="center">Found users</h3>
         <table th:each="user : ${users}">
             <tr>
+                <td><img th:src="${user.avatarUrl}" alt="Image not found" width="300" height="200"></td>
+            </tr>
+            <tr>
                 <td><label th:text="${user.name} + ' ' + ${user.surname}"></label></td>
             </tr>
             <tr>
