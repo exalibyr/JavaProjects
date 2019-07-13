@@ -3,8 +3,29 @@
     <head>
         <title>My blog</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style>
+            ul#menu li{
+                display:inline;
+            }
+        </style>
     </head>
     <body>
+        <div align="right">
+            <ul id="menu">
+                <li>
+                    <button type="button" th:onclick="'location.href=\''
+                         + @{/user/id={id}/findUsers (id=${userId})} + '\''">Back</button>
+                </li>
+                <li>
+                    <button type="button" th:onclick="'location.href=\''
+                         + @{/user/id={userId} (userId=${userId})} + '\''">Home page</button>
+                </li>
+                <li>
+                    <button type="button" th:onclick="'location.href=\''
+                         + @{/} + '\''">Log out</button>
+                </li>
+            </ul>
+        </div>
         <h1 align="center" th:text="'Page of user: ' + ${user.name} + ' ' + ${user.surname}"></h1>
         <table>
             <tr>
@@ -17,10 +38,8 @@
                 <td>About: <label th:text="${user.about}"></label></td>
             </tr>
         </table>
-        <form action="#" th:action="@{/user/id={userId} (userId=${userId})}" method="get">
-            <button type="submit">Go to home page</button>
-        </form>
-        <h3 align="center" th:text="${user.name} + ' ' + ${user.surname} + '\'s ' + 'publications'"></h3>
+
+        <h3 align="center" th:text="${user.name} + ' ' + ${user.surname} + '\'s publications'"></h3>
         <table th:each="publication : ${publications}">
             <tr>
                 <td>Title:</td>

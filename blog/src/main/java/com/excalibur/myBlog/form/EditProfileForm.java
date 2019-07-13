@@ -2,7 +2,7 @@ package com.excalibur.myBlog.form;
 
 import javax.validation.constraints.Size;
 
-public class ProfileUpdatingForm {
+public class EditProfileForm {
 
     @Size(max = 20, min = 1)
     private String name;
@@ -13,9 +13,9 @@ public class ProfileUpdatingForm {
     @Size(max = 100)
     private String about;
 
-    private String avatarUrl;
+    private byte[] avatar;
 
-    public ProfileUpdatingForm() {
+    public EditProfileForm() {
     }
 
     public String getName() {
@@ -42,11 +42,11 @@ public class ProfileUpdatingForm {
         this.about = about;
     }
 
-    public String getAvatarUrl() {
-        return avatarUrl;
+    public byte[] getAvatar() {
+        return avatar;
     }
 
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
+    public void setAvatar(byte[] avatar) {
+        this.avatar = avatar;
     }
 }

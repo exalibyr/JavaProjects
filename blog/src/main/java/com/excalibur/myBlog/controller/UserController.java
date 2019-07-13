@@ -5,11 +5,9 @@ import com.excalibur.myBlog.controller.service.UserService;
 import com.excalibur.myBlog.controller.service.VerificationDataService;
 import com.excalibur.myBlog.dao.Publication;
 import com.excalibur.myBlog.dao.User;
-import com.excalibur.myBlog.dao.VerificationData;
-import com.excalibur.myBlog.form.ProfileUpdatingForm;
+import com.excalibur.myBlog.form.EditProfileForm;
 import com.excalibur.myBlog.form.PublicationForm;
-import com.excalibur.myBlog.form.RegistrationForm;
-import com.excalibur.myBlog.form.VerificationForm;
+import com.excalibur.myBlog.utils.Environment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +15,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -24,9 +23,8 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
+//@PreAuthorize(value = "hasRole('USER')")
 public class UserController{
-
-
 
     @Autowired
     private UserService userService;
@@ -35,63 +33,15 @@ public class UserController{
     @Autowired
     private VerificationDataService verificationDataService;
 
-    @GetMapping(value = "/sign-in")
-    public String showSingInForm(VerificationForm verificationForm){
-        return "sign-in";
-    }
 
-    @PostMapping(value = "/sign-in")
-    public String verifyUser( @Valid VerificationForm verificationForm, BindingResult bindingResult){
-        if(bindingResult.hasErrors()){
-            return "sign-in";
-        }
-        else{
-            Optional<VerificationData> verificationData = verificationDataService
-                    .verifyUser(verificationForm.getUserLogin(), verificationForm.getUserPassword());
-            if(verificationData.isPresent()){
-                return userService
-                        .findUserByVerificationData(verificationData.get())
-                        .map(user -> "redirect:/user/id=" + user.getId())
-                        .orElse("error-page");
-            }
-            else {
-                return "sign-in";
-            }
 
-        }
-    }
 
-    @GetMapping(value = "/sign-up")
-    public String showRegistrationForm(RegistrationForm registrationForm){
-        return "sign-up";
-    }
-
-    @PostMapping(value = "/sign-up")
-    public String tryToRegisterUser( @Valid RegistrationForm registrationForm, BindingResult bindingResult){
-        if(bindingResult.hasErrors()){
-            return "sign-up";
-        }
-        else{
-            User newUser = registrationForm.getUser();
-            VerificationData userVerificationData = registrationForm.getValidationData();
-            newUser.setVerificationData(userVerificationData);
-            userVerificationData.setUser(newUser);
-            userService.registerNewUser(newUser);
-            return "redirect:/registration-success/id=" + newUser.getId();
-        }
-    }
-
-    @GetMapping(value = "/registration-success/id={userId}")
-    public String registrationSuccess( @PathVariable(name = "userId") Integer userId, Model model){
-        Optional<User> userOptional = userService.findUserById(userId);
-        if(userOptional.isPresent()){
-            User user = userOptional.get();
-            model.addAttribute("user", user);
-            return "registration-success";
-        }
-        else {
-            return "error-page";
-        }
+    @GetMapping(value = "/user/redirect")
+    public String loginSuccess(HttpServletRequest httpServletRequest){
+        String login = httpServletRequest.getRemoteUser();
+        Integer id = verificationDataService.findByLogin(login).getUserId();
+       return "redirect:/user/id="
+               + id;
     }
 
 
@@ -103,6 +53,11 @@ public class UserController{
             model.addAttribute("user", user);
             List<Publication> publications = publicationService.findPublicationsByUser(user);
             model.addAttribute("publications", publications);
+            if ( user.hasAvatar()) {
+                model.addAttribute("avatarURL", Environment.fileServerDomain + "/user/" + userId + "/avatar");
+            } else {
+                model.addAttribute("avatarURL", Environment.fileServerDomain + Environment.defaultAvatarURI);
+            }
             return "home-page";
         }
         else {
@@ -191,29 +146,42 @@ public class UserController{
 
     @GetMapping(value = "/user/id={userId}/editProfile")
     public String getEditProfilePage( @PathVariable(name = "userId") Integer userId,
-//                                      ProfileUpdatingForm profileUpdatingForm,
+//                                      EditProfileForm editProfileForm,
                                       Model model){
 //        model.addAttribute("userId", userId);
-        model.addAttribute("user", userService.findUserById(userId).orElseGet(null));
-        return "editProfilePage";
+        Optional<User> userOptional = userService.findUserById(userId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            model.addAttribute("user", user);
+            if ( user.hasAvatar()) {
+                model.addAttribute("avatarURL", Environment.fileServerDomain + "/user/" + userId + "/avatar");
+            } else {
+                model.addAttribute("avatarURL", Environment.fileServerDomain + Environment.defaultAvatarURI);
+            }
+            return "editProfilePage";
+        } else {
+            return "error-page";
+        }
+
     }
 
     @PostMapping(value = "/user/id={userId}/editProfile")
     public String editProfile( @PathVariable(name = "userId") Integer userId,
-//                               @Valid ProfileUpdatingForm profileUpdatingForm,
+//                               @Valid EditProfileForm editProfileForm,
                                @ModelAttribute(name = "user") @Valid User user,
                                BindingResult bindingResult){
         if(bindingResult.hasErrors()){
             return "redirect:/user/id=" + userId + "/editProfile";
         }
         else {
-            user.setId(userId);
-//            User user = userService.findUserById(userId).orElseGet(null);
-//            user.setName(profileUpdatingForm.getName());
-//            user.setSurname(profileUpdatingForm.getSurname());
-//            user.setAbout(profileUpdatingForm.getAbout());
-//            user.setAvatarUrl(profileUpdatingForm.getAvatarUrl());
-//            user.setPublications(publicationService.findPublicationsByUser(user));
+//            User user = new User();
+//            user.setId(userId);
+//            user.setName(editProfileForm.getName());
+//            user.setSurname(editProfileForm.getSurname());
+//            user.setAbout(editProfileForm.getAbout());
+//            if (editProfileForm.getAvatar() != null) {
+//                user.setHasAvatar(true);
+//            }
             userService.updateUser(user);
             return "redirect:/user/id=" + userId;
         }

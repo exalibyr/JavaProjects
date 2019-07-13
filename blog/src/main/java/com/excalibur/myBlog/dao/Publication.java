@@ -5,6 +5,7 @@ import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
 import java.time.ZonedDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "user_publication", schema = "public")
@@ -26,11 +27,15 @@ public class Publication {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @Cascade(value = {CascadeType.SAVE_UPDATE})
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "picture_url")
     private String pictureUrl;
+
+    @OneToMany(mappedBy = "publication", fetch = FetchType.LAZY)
+    @Cascade(value = CascadeType.ALL)
+    private Set<File> files;
 
     public Publication() {
     }
@@ -86,5 +91,13 @@ public class Publication {
 
     public void setPictureUrl(String pictureUrl) {
         this.pictureUrl = pictureUrl;
+    }
+
+    public Set<File> getFiles() {
+        return files;
+    }
+
+    public void setFiles(Set<File> files) {
+        this.files = files;
     }
 }

@@ -3,8 +3,29 @@
     <head>
         <title>My blog</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style>
+            ul#menu li{
+                display:inline;
+            }
+        </style>
     </head>
     <body>
+        <div align="right">
+            <ul id="menu">
+                <li>
+                    <button type="button" th:onclick="'location.href=\''
+                                     + @{/user/id={userId}/findUsers (userId=${userId})} + '\''">Back</button>
+                </li>
+                <li>
+                    <button type="button" th:onclick="'location.href=\''
+                                     + @{/user/id={userId} (userId=${userId})} + '\''">Home page</button>
+                </li>
+                <li>
+                    <button type="button" th:onclick="'location.href=\''
+                                     + @{/} + '\''">Log out</button>
+                </li>
+            </ul>
+        </div>
         <h3 align="center">Found users</h3>
         <table th:each="user : ${users}">
             <tr>
@@ -18,10 +39,9 @@
             </tr>
             <tr>
                 <td>
-                    <form action="#" th:action="@{/user/id={userId}/showUserPage/id={id} (userId=${userId}, id=${user.id})}"
-                          method="get">
-                        <button type="submit">View page</button>
-                    </form>
+                    <button type="button" th:onclick="'location.href=\''
+                     + @{/user/id={userId}/showUserPage/id={id} (userId=${userId}, id=${user.id})}
+                      + '\''">View page</button>
                 </td>
             </tr>
             <tr>

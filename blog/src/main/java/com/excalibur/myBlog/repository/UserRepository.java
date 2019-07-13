@@ -1,5 +1,6 @@
 package com.excalibur.myBlog.repository;
 
+import com.excalibur.myBlog.dao.File;
 import com.excalibur.myBlog.dao.User;
 import com.excalibur.myBlog.dao.VerificationData;
 import org.springframework.data.repository.CrudRepository;

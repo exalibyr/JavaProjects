@@ -17,9 +17,9 @@ public class VerificationDataService {
         return verificationDataRepository.findByLoginAndPassword(login, password);
     }
 
-    public Optional<VerificationData> verifyUserLogin(String login){
-        return verificationDataRepository.findById(login);
-    }
 
+    public VerificationData findByLogin(String login){
+        return verificationDataRepository.findByLogin(login);
+    }
 
 }

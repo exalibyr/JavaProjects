@@ -22,5 +22,8 @@
                 </tr>
             </table>
         </form>
+        <div th:if="${param.error}">
+            Incorrect username or password!
+        </div>
     </body>
 </html>

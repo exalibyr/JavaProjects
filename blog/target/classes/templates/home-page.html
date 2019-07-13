@@ -3,15 +3,51 @@
     <head>
         <title>My blog</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style>
+            ul#menu li{
+                display:inline;
+            }
+        </style>
     </head>
     <body>
         <div align="right">
-            <button type="button" onclick="location.href='/'">Log out</button>
+            <ul id="menu">
+                <li>
+                    <div>
+                        <button type="button" th:onclick="'location.href=\''
+                        + @{/user/id={userId}/createPublication (userId=${user.id})} + '\''">Create publication</button>
+                    </div>
+
+                </li>
+                <li>
+                    <div>
+                        <button type="button" th:onclick="'location.href=\''
+                        + @{/user/id={userId}/editProfile (userId=${user.id})} + '\''">Edit profile</button>
+                    </div>
+
+                </li>
+                <li>
+                    <div>
+                        <button type="button" th:onclick="'location.href=\''
+                        + @{/user/id={userId}/findUsers (userId=${user.id})} + '\''">Find users</button>
+                    </div>
+
+                </li>
+                <li>
+                    <!--<button type="button" th:onclick="'location.href=\''-->
+                     <!--+ @{/logout} + '\''">Log out</button>-->
+                    <div>
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit">Sign out</button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
         </div>
         <h1 align="center" th:text="'Welcome to your home page, ' + ${user.name} + '!'"></h1>
         <table>
             <tr>
-                <td><img th:src="${user.avatarUrl}" alt="Image not found" width="300" height="200"></td>
+                <td><img id="userAvatar" th:src="${avatarURL}" width="300" height="400"></td>
             </tr>
             <tr>
                 <td><label th:text="${user.name} + ' ' + ${user.surname}"></label></td>
@@ -19,26 +55,9 @@
             <tr>
                 <td>About: <label th:text="${user.about}"></label></td>
             </tr>
-            <tr>
-                <td>
-                    <form action="#" th:action="@{/user/id={userId}/editProfile (userId=${user.id})}" method="get">
-                        <button type="submit">Edit profile</button>
-                    </form>
-                </td>
-                <td>
-                    <form action="#" th:action="@{/user/id={userId}/findUsers (userId=${user.id})}" method="get">
-                        <button type="submit">Find users</button>
-                    </form>
-                </td>
-            </tr>
-
         </table>
 
-
         <h3 align="center">Your publications</h3>
-        <form action="#" th:action="@{/user/id={userId}/createPublication (userId=${user.id})}" method="get">
-            <button type="submit">Create publication</button>
-        </form>
         <table th:each="publication : ${publications}">
             <tr>
                 <td>Title:</td>
@@ -60,10 +79,9 @@
             </tr>
             <tr>
                 <td>
-                    <form action="#" th:action="@{/user/id={userId}/deletePublication/id={pubId}
-                    (userId=${user.id}, pubId=${publication.id})}" method="get">
-                        <button type="submit">Delete this publication</button>
-                    </form>
+                    <button type="button" th:onclick="'location.href=\''
+                     + @{/user/id={userId}/deletePublication/id={pubId} (userId=${user.id}, pubId=${publication.id})}
+                     + '\''">Delete this publication</button>
                 </td>
             </tr>
             <tr>
