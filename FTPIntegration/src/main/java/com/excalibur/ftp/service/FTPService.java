@@ -1,24 +1,23 @@
 package com.excalibur.ftp.service;
 
-import com.excalibur.ftp.util.FTPNoOpThread;
-import com.excalibur.ftp.dao.response.body.FTPRetrieveResult;
 import com.excalibur.ftp.dao.response.body.FTPStoreResult;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPFileFilters;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class FTPService {
 
-    private String SERVER_NAME;
-    private int SERVER_PORT;
-    private String USER_NAME;
-    private String USER_PASS;
-    private static final String ROOD_DIR = "/";
+    private String serverName;
+    private int serverPort;
+    private String userName;
+    private String userPass;
+    private static final String ROOT_DIR = "/";
     private FTPClient ftpClient;
 //    private ReentrantLock lock;
 //    private FTPNoOpThread noOpThread;
@@ -27,86 +26,148 @@ public class FTPService {
         Properties properties = new Properties();
         try (InputStream stream = new FileInputStream("src/main/resources/application.properties")) {
             properties.load(stream);
-            SERVER_NAME = properties.getProperty("FTPServer.name");
-            SERVER_PORT = Integer.valueOf(properties.getProperty("FTPServer.port"));
-            USER_NAME = properties.getProperty("FTPServer.user.name");
-            USER_PASS = properties.getProperty("FTPServer.user.password");
+            serverName = properties.getProperty("FTPServer.name");
+            serverPort = Integer.valueOf(properties.getProperty("FTPServer.port"));
+            userName = properties.getProperty("FTPServer.user.name");
+            userPass = properties.getProperty("FTPServer.user.password");
             startNewSession();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public FTPRetrieveResult retrieveFiles(String dirName, Set<String> fileNames) {
-        List<String> errors = new ArrayList<>();
+    public byte[] retrieveFile(String dirName) {
         try {
 //            lock.lock();
             if ( !ftpClient.isConnected()) restoreConnection();
             if (changeToRootDir()) {
                 if (ftpClient.changeWorkingDirectory(dirName)) {
-                    Map<String, byte[]> nameContent = new HashMap<>();
-                    for (String fileName : fileNames) {
-                        ftpClient.enterLocalPassiveMode();
-                        InputStream stream = ftpClient.retrieveFileStream(fileName);
-                        if (stream == null) {
-                            errors.add("RETRIEVE " + fileName+ " FILE FAILED");
-                            return new FTPRetrieveResult(false, errors, null);
-                        } else {
-                            nameContent.put(fileName, stream.readAllBytes());
-                        }
-                    }
-                    return new FTPRetrieveResult(true, errors, nameContent);
+                    return retrieveSingleFile();
                 } else {
-                    errors.add("CHANGE TO " + dirName + " DIR FAILED");
-                    return new FTPRetrieveResult(false, errors, null);
+                    throw new IOException(ftpClient.printWorkingDirectory() + " - CHANGE TO " + dirName + " DIR FAILED");
                 }
             } else {
-                errors.add("CHANGE TO ROOT DIR FAILED");
-                return new FTPRetrieveResult(false, errors, null);
+                throw new IOException(ftpClient.printWorkingDirectory() + " - CHANGE TO ROOT DIR FAILED");
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            errors.add(ex.getMessage());
-            return new FTPRetrieveResult(false, errors, null);
+            return null;
         } finally {
 //            lock.unlock();
         }
     }
 
-    public FTPStoreResult storeSingleFile(String dirName, String fileName, byte[] fileContent) {
+    private byte[] retrieveSingleFile() throws IOException {
+        FTPFile[] files = ftpClient.mlistDir(ftpClient.printWorkingDirectory(), FTPFileFilters.NON_NULL);
+        switch (files.length) {
+            case 0 : {
+                throw new IOException(ftpClient.printWorkingDirectory() + " - AVATAR NOT FOUND");
+            }
+            case 1 : {
+                return retrieveSingleFile(files[0].getName());
+            }
+            default: {
+                Map<Long, String> nameByTime = new TreeMap<>();
+                for (FTPFile file : files) {
+                    nameByTime.put(file.getTimestamp().getTimeInMillis(), file.getName());
+                }
+                return retrieveSingleFile(new LinkedList<>(nameByTime.values()).getLast());
+            }
+        }
+    }
+
+    public byte[] retrieveFile(String dirName, String fileName) {
+        try {
+//            lock.lock();
+            if ( !ftpClient.isConnected()) restoreConnection();
+            if (changeToRootDir()) {
+                if (ftpClient.changeWorkingDirectory(dirName)) {
+                    return retrieveSingleFile(fileName);
+                } else {
+                    throw new IOException(ftpClient.printWorkingDirectory() + " - CHANGE TO " + dirName + " DIR FAILED");
+                }
+            } else {
+                throw new IOException(ftpClient.printWorkingDirectory() + " - CHANGE TO ROOT DIR FAILED");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        } finally {
+//            lock.unlock();
+        }
+    }
+
+    private byte[] retrieveSingleFile(String fileName) throws IOException {
+        InputStream stream = ftpClient.retrieveFileStream(fileName);
+        if (stream == null) {
+            throw new IOException(ftpClient.printWorkingDirectory() + " - RETRIEVE " + fileName + " FILE FAILED");
+        } else {
+            byte[] content = stream.readAllBytes();
+            stream.close();
+            if ( !ftpClient.completePendingCommand()) interruptTransaction();
+            return content;
+        }
+    }
+
+//    public FTPRetrieveResult retrieveFiles(String dirName, Set<String> fileNames) {
+//        List<String> errors = new ArrayList<>();
+//        try {
+////            lock.lock();
+//            if ( !ftpClient.isConnected()) restoreConnection();
+//            if (changeToRootDir()) {
+//                if (ftpClient.changeWorkingDirectory(dirName)) {
+//                    Map<String, byte[]> nameContent = new HashMap<>();
+//                    for (String fileName : fileNames) {
+//                        ftpClient.enterLocalPassiveMode();
+//                        InputStream stream = ftpClient.retrieveFileStream(fileName);
+//                        if (stream == null) {
+//                            errors.add("RETRIEVE " + fileName + " FILE FAILED");
+//                            return new FTPRetrieveResult(false, errors, null);
+//                        } else {
+//                            nameContent.put(fileName, stream.readAllBytes());
+//                        }
+//                    }
+//                    return new FTPRetrieveResult(true, errors, nameContent);
+//                } else {
+//                    errors.add("CHANGE TO " + dirName + " DIR FAILED");
+//                    return new FTPRetrieveResult(false, errors, null);
+//                }
+//            } else {
+//                errors.add("CHANGE TO ROOT DIR FAILED");
+//                return new FTPRetrieveResult(false, errors, null);
+//            }
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//            errors.add(ex.getMessage());
+//            return new FTPRetrieveResult(false, errors, null);
+//        } finally {
+////            lock.unlock();
+//        }
+//    }
+
+    public FTPStoreResult storeFile(String dirName, String fileName, byte[] fileContent) {
         List<String> errors = new ArrayList<>();
         try {
 //            lock.lock();
             if ( !ftpClient.isConnected()) restoreConnection();
             if (changeToRootDir()) {
-                ftpClient.enterLocalPassiveMode();
                 if (ftpClient.changeWorkingDirectory(dirName)) {
-                    if (storeSingleFile(ftpClient, fileName, fileContent)) {
-                        return new FTPStoreResult(true, fileName, errors);
-                    } else {
-                        errors.add("STORE " + fileName + " FILE FAILED");
-                        return new FTPStoreResult(false, null, errors);
-                    }
+                    return storeSingleFile(fileName, fileContent, errors);
                 } else {
                     if (ftpClient.makeDirectory(ftpClient.printWorkingDirectory() + dirName)) {
                         if (ftpClient.changeWorkingDirectory(dirName)) {
-                            if (storeSingleFile(ftpClient, fileName, fileContent)) {
-                                return new FTPStoreResult(true, fileName, errors);
-                            } else {
-                                errors.add("STORE " + fileName + " FILE FAILED");
-                                return new FTPStoreResult(false, null, errors);
-                            }
+                            return storeSingleFile(fileName, fileContent, errors);
                         } else {
-                            errors.add("CHANGE TO " + dirName + " DIR FAILED");
+                            errors.add(ftpClient.printWorkingDirectory() + " - CHANGE TO " + dirName + " DIR FAILED");
                             return new FTPStoreResult(false, null, errors);
                         }
                     } else {
-                        errors.add("MAKE " + dirName + " DIR FAILED");
+                        errors.add(ftpClient.printWorkingDirectory() + " - MAKE " + dirName + " DIR FAILED");
                         return new FTPStoreResult(false, null, errors);
                     }
                 }
             } else {
-                errors.add("CHANGE TO ROOT DIR FAILED");
+                errors.add(ftpClient.printWorkingDirectory() + " - CHANGE TO ROOT DIR FAILED");
                 return new FTPStoreResult(false, null, errors);
             }
         } catch (Exception ex) {
@@ -123,9 +184,9 @@ public class FTPService {
 //       FTPClient ftpClient = new FTPClient();
 //       List<String> errors = new ArrayList<>();
 //       try {
-//           ftpClient.connect(SERVER_NAME, SERVER_PORT);
+//           ftpClient.connect(serverName, serverPort);
 //           if (ftpClient.isConnected()) {
-//               if (ftpClient.login(USER_NAME, USER_PASS)) {
+//               if (ftpClient.login(userName, userPass)) {
 //                   ftpClient.enterLocalPassiveMode();
 //                   if (ftpClient.changeWorkingDirectory(dirName)) {
 //                       storeSingleFile(ftpClient, fileName, fileContent);
@@ -166,16 +227,22 @@ public class FTPService {
 //       }
 //   }
 
-   private Boolean storeSingleFile(FTPClient ftpClient, String fileName, byte[] fileContent) throws IOException{
+   private FTPStoreResult storeSingleFile(String fileName, byte[] fileContent, List<String> errors) throws IOException{
+       ftpClient.enterLocalPassiveMode();
        InputStream stream = new ByteArrayInputStream(fileContent);
        ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
-       Boolean success = ftpClient.storeFile(fileName, stream);
-       stream.close();
-       return success;
+       if (ftpClient.storeFile(fileName, stream)) {
+           stream.close();
+           return new FTPStoreResult(true, fileName, errors);
+       } else {
+           stream.close();
+           errors.add(ftpClient.printWorkingDirectory() + " - STORE " + fileName + " FILE FAILED");
+           return new FTPStoreResult(false, null, errors);
+       }
    }
 
    private Boolean changeToRootDir() throws IOException{
-        return ftpClient.changeWorkingDirectory(ROOD_DIR);
+        return ftpClient.changeWorkingDirectory(ROOT_DIR);
    }
 
 //   private void startNoOpThread() {
@@ -186,9 +253,9 @@ public class FTPService {
 
    private void startNewSession() throws IOException {
        ftpClient = new FTPClient();
-       ftpClient.connect(SERVER_NAME, SERVER_PORT);
+       ftpClient.connect(serverName, serverPort);
        if (ftpClient.isConnected()) {
-           if (ftpClient.login(USER_NAME, USER_PASS)) {
+           if (ftpClient.login(userName, userPass)) {
 //               startNoOpThread();
            } else {
                throw new IOException("LOGIN FAILED");
@@ -202,5 +269,14 @@ public class FTPService {
 //       noOpThread.setAlive(false);
        startNewSession();
    }
+
+   private void interruptTransaction() throws IOException {
+        ftpClient.abort();
+        ftpClient.logout();
+        ftpClient.disconnect();
+        throw new IOException("TRANSACTION INTERRUPTED!!! DISCONNECTED");
+   }
+
+
 
 }
